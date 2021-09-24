@@ -1,0 +1,24 @@
+# permissions for end users to edit mongoshakes.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: mongoshake-editor-role
+rules:
+- apiGroups:
+  - pratise.github.com
+  resources:
+  - mongoshakes
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - pratise.github.com
+  resources:
+  - mongoshakes/status
+  verbs:
+  - get

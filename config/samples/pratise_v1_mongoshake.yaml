@@ -1,0 +1,7 @@
+apiVersion: pratise.github.com/v1
+kind: MongoShake
+metadata:
+  name: mongoshake-sample
+spec:
+  # Add fields here
+  foo: bar

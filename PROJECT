@@ -1,0 +1,16 @@
+domain: github.com
+layout:
+- go.kubebuilder.io/v3
+projectName: mongoshake-kubernetes-operator
+repo: github.com/pratise/mongoshake-kubernetes-operator
+resources:
+- api:
+    crdVersion: v1
+    namespaced: true
+  controller: true
+  domain: github.com
+  group: pratise
+  kind: MongoShake
+  path: github.com/pratise/mongoshake-kubernetes-operator/api/v1
+  version: v1
+version: "3"
