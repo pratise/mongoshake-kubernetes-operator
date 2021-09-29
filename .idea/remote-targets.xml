@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="RemoteTargetsManager">
+    <targets>
+      <target name="WSL - kali-linux" type="wsl">
+        <config>
+          <option name="distributionMsId" value="kali-linux" />
+          <option name="projectRootOnTarget" value="/mnt/c/Users/tiany/AppData/Local/JetBrains/Toolbox/apps/Goland/ch-0/212.5284.40/jbr/bin&#10;/mongoshake-kubernetes-operator" />
+        </config>
+        <ContributedStateBase type="GoLanguageRuntime">
+          <config>
+            <option name="goPath" value="/mnt/d/gopath" />
+            <option name="goRoot" value="/root/.g/go/bin/go" />
+            <option name="goVersion" value="go1.16.8 linux/amd64" />
+          </config>
+        </ContributedStateBase>
+      </target>
+    </targets>
+  </component>
+</project>

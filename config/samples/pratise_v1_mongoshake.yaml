@@ -4,4 +4,100 @@ metadata:
   name: mongoshake-sample
 spec:
   # Add fields here
-  foo: bar
+  image: hub.51idc.com/pratise/mongoshake:v1
+  pause: false
+  imagePullPolicy: Always
+  backoffLimit: 4
+  annotations:
+    mongshake: test
+  configuration: |
+    conf.version = 10
+    id = mongoshake
+    master_quorum = false
+    full_sync.http_port = 9101
+    incr_sync.http_port = 9100
+    system_profile_port = 9200
+    log.level = info
+    log.dir =
+    log.file = collector.log
+    log.flush = false
+    sync_mode = full
+    mongo_urls = mongodb://readuser:read123@192.168.103.22:30826,192.168.103.20:30826,192.168.103.21:30826
+    mongo_cs_url = mongodb://readuser:read123@192.168.103.22:30826,192.168.103.20:30826,192.168.103.21:30826
+    mongo_s_url = mongodb://readuser:read123@192.168.103.22:30826,192.168.103.20:30826,192.168.103.21:30826
+    mongo_ssl_root_ca_file =
+    tunnel = direct
+    tunnel.address = mongodb://writeuser:write123@192.168.201.117:31481,192.168.201.116:31481,192.168.201.115:31481
+    tunnel.message = raw
+    tunnel.kafka.partition_number = 1
+    tunnel.json.format =
+    tunnel.mongo_ssl_root_ca_file =
+    mongo_connect_mode = secondaryPreferred
+    filter.namespace.black =
+    filter.namespace.white =
+    filter.pass.special.db =
+    filter.ddl_enable = false
+    filter.oplog.gids = false
+    checkpoint.storage.url =
+    checkpoint.storage.db = mongoshake
+    checkpoint.storage.collection = ckpt_default
+    checkpoint.storage.url.mongo_ssl_root_ca_file =
+    checkpoint.start_position = 1970-01-01T00:00:00Z
+    transform.namespace =
+
+    full_sync.reader.collection_parallel = 6
+    full_sync.reader.write_document_parallel = 8
+    full_sync.reader.document_batch_size = 128
+    full_sync.reader.parallel_thread = 1
+    full_sync.reader.parallel_index = _id
+    full_sync.collection_exist_drop = true
+
+    full_sync.create_index = none
+
+    full_sync.executor.insert_on_dup_update = false
+    full_sync.executor.filter.orphan_document = false
+    full_sync.executor.majority_enable = false
+
+    incr_sync.mongo_fetch_method = oplog
+
+    incr_sync.change_stream.watch_full_document = false
+
+    incr_sync.oplog.gids =
+
+    incr_sync.shard_key = collection
+    incr_sync.shard_by_object_id_whitelist =
+
+    incr_sync.worker = 8
+
+    incr_sync.tunnel.write_thread = 8
+
+    incr_sync.target_delay = 0
+
+    incr_sync.worker.batch_queue_size = 64
+    incr_sync.adaptive.batching_max_size = 1024
+    incr_sync.fetcher.buffer_capacity = 256
+
+    incr_sync.executor.upsert = false
+    incr_sync.executor.insert_on_dup_update = false
+    incr_sync.conflict_write_to = none
+    incr_sync.executor.majority_enable = false
+    special.source.db.flag =
+
+  resources:
+    limits:
+      cpu: "300m"
+      memory: "0.5G"
+    requests:
+      cpu: "300m"
+      memory: "0.5G"
+  volumeSpec:
+    #      emptyDir: {}
+    #      hostPath:
+    #        path: /data
+    #        type: Directory
+    persistentVolumeClaim:
+      storageClassName: smartops-nfs-storage
+      accessModes: [ "ReadWriteOnce" ]
+      resources:
+        requests:
+          storage: 3Gi
