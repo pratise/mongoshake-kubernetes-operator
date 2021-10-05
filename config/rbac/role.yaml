@@ -4,12 +4,13 @@ apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
   creationTimestamp: null
-  name: manager-role
+  name: mongoshake-role
 rules:
 - apiGroups:
   - pratise.github.com
   resources:
   - mongoshakes
+  - mongoshakes/status
   verbs:
   - create
   - delete
@@ -19,16 +20,46 @@ rules:
   - update
   - watch
 - apiGroups:
-  - pratise.github.com
+    - ""
   resources:
-  - mongoshakes/finalizers
+    - pods
+    - pods/exec
+    - services
+    - persistentvolumeclaims
+    - secrets
+    - configmaps
   verbs:
-  - update
+    - get
+    - list
+    - watch
+    - create
+    - update
+    - patch
+    - delete
 - apiGroups:
-  - pratise.github.com
+  - apps
   resources:
-  - mongoshakes/status
+    - deployments
+    - replicasets
+    - statefulsets
   verbs:
-  - get
-  - patch
-  - update
+    - get
+    - list
+    - watch
+    - create
+    - update
+    - patch
+    - delete
+- apiGroups:
+    - batch
+  resources:
+    - cronjobs
+    - jobs
+  verbs:
+    - get
+    - list
+    - watch
+    - create
+    - update
+    - patch
+    - delete

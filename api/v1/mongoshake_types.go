@@ -53,15 +53,17 @@ type MongoShakeStatus struct {
 	// INSERT ADDITIONAL STATUS FIELD - define observed state of cluster
 	// Important: Run "make" to regenerate code after modifying this file
 	State      AppState           `json:"state,omitempty"`
-	JobStatus  *JobStatus          `json:"job_status,omitempty"`
+	JobStatus  *JobStatus         `json:"job_status,omitempty"`
 	Message    string             `json:"message,omitempty"`
 	Conditions []ClusterCondition `json:"conditions,omitempty"`
 	Host       string             `json:"host,omitempty"`
 }
 
 // +kubebuilder:object:root=true
+// +kubebuilder:resource:shortName="ms"
 // +kubebuilder:subresource:status
-
+// +kubebuilder:printcolumn:name="State",type=string,JSONPath=`.status.state`,description="The Actual status of Mongoshake"
+// +kubebuilder:printcolumn:name="Age",type="date",JSONPath=".metadata.creationTimestamp"
 // MongoShake is the Schema for the mongoshakes API
 type MongoShake struct {
 	metav1.TypeMeta   `json:",inline"`

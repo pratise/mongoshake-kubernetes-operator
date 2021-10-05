@@ -79,6 +79,7 @@ const (
 	updateDone = 0
 	updateWait = 1
 )
+
 // +kubebuilder:rbac:groups=pratise.github.com,resources=mongoshakes,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups=pratise.github.com,resources=mongoshakes/status,verbs=get;update;patch
 // +kubebuilder:rbac:groups=pratise.github.com,resources=mongoshakes/finalizers,verbs=update

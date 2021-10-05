@@ -6,5 +6,3 @@ func (r *MongoShakeReconciler) checkNSetDefaults(logger logr.Logger) error {
 
 	return nil
 }
-
-

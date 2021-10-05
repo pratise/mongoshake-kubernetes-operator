@@ -13,10 +13,20 @@ spec:
     kind: MongoShake
     listKind: MongoShakeList
     plural: mongoshakes
+    shortNames:
+    - ms
     singular: mongoshake
   scope: Namespaced
   versions:
-  - name: v1
+  - additionalPrinterColumns:
+    - description: The Actual status of Mongoshake
+      jsonPath: .status.state
+      name: State
+      type: string
+    - jsonPath: .metadata.creationTimestamp
+      name: Age
+      type: date
+    name: v1
     schema:
       openAPIV3Schema:
         description: MongoShake is the Schema for the mongoshakes API

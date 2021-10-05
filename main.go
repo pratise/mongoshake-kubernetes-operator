@@ -71,7 +71,7 @@ func main() {
 		Port:                   9443,
 		HealthProbeBindAddress: probeAddr,
 		LeaderElection:         enableLeaderElection,
-		LeaderElectionID:       "58bae3b9.github.com",
+		LeaderElectionID:       "mongoshake-operator-lock",
 	})
 	if err != nil {
 		setupLog.Error(err, "unable to start manager")
