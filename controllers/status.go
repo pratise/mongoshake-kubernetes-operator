@@ -90,6 +90,9 @@ func (r *MongoShakeReconciler) jobStatus(cr *api.MongoShake) (api.JobStatus, err
 		Size:   len(jobPods.Items),
 		Status: api.AppStateInit,
 	}
+	if cr.Spec.Pause && status.Size == 0 {
+		status.Status = api.AppStatePaused
+	}
 	for _, pod := range jobPods.Items {
 		for _, cntr := range pod.Status.ContainerStatuses {
 			if cntr.State.Waiting != nil && cntr.State.Waiting.Message != "" {
@@ -113,6 +116,9 @@ func (r *MongoShakeReconciler) jobStatus(cr *api.MongoShake) (api.JobStatus, err
 		case cr.Spec.Pause && status.Ready > 0:
 			status.Status = api.AppStateStopping
 		case cr.Spec.Pause:
+			if err := r.Delete(context.TODO(), &pod); err != nil {
+				log.Error(err, "dts-job is paused,delete job pod fail", "pod", pod.Name)
+			}
 			status.Status = api.AppStatePaused
 		case status.Size == status.Ready && pod.Status.Phase == corev1.PodRunning:
 			status.Status = api.AppStateRunning
@@ -120,6 +126,7 @@ func (r *MongoShakeReconciler) jobStatus(cr *api.MongoShake) (api.JobStatus, err
 			status.Status = api.AppStateComplete
 		}
 	}
+
 	return status, nil
 }
 

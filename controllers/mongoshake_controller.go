@@ -127,7 +127,7 @@ func (r *MongoShakeReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 		}
 	}()
 
-	err = r.checkNSetDefaults(log)
+	err = cr.CheckNSetDefaults(log)
 	if err != nil {
 		err = errors.Wrap(err, "wrong mongoshake options")
 		return reconcile.Result{}, err
@@ -213,20 +213,23 @@ func (r *MongoShakeReconciler) reconcileJob(cr *api.MongoShake, logger logr.Logg
 	msJob := ms.MongoshakeJob(cr)
 	err := setControllerReference(cr, msJob, r.Scheme)
 	if err != nil {
-		return errors.Wrapf(err, "set owner ref for deployment %s", msJob.Name)
+		return errors.Wrapf(err, "set owner ref for job %s", msJob.Name)
 	}
 	err = r.Get(context.TODO(), types.NamespacedName{Name: msJob.Name, Namespace: msJob.Namespace}, msJob)
 	if err != nil && !k8serrors.IsNotFound(err) {
 		return errors.Wrapf(err, "get job %s", msJob.Name)
 	}
-
+	if k8serrors.IsNotFound(err) && cr.Spec.Pause {
+		// log.Info("stopped mongoshake job", "job", msJob.Name)
+		return nil
+	}
 	jopSpec, err := ms.MongoshakeJobSpec(cr, logger)
 	if err != nil {
 		return errors.Wrapf(err, "create job spec %s", msJob.Name)
 	}
 
 	msJob.Spec = jopSpec
-	err = r.createOrUpdateJob(msJob)
+	err = r.createOrUpdateJob(cr, msJob)
 	if err != nil {
 		return errors.Wrapf(err, "update or create job %s", msJob.Name)
 	}
@@ -273,7 +276,7 @@ func (r *MongoShakeReconciler) createOrUpdate(depl *appsv1.Deployment) error {
 	return nil
 }
 
-func (r *MongoShakeReconciler) createOrUpdateJob(job *batchv1.Job) error {
+func (r *MongoShakeReconciler) createOrUpdateJob(cr *api.MongoShake, job *batchv1.Job) error {
 	objectMeta := job.GetObjectMeta()
 	if objectMeta.GetAnnotations() == nil {
 		objectMeta.SetAnnotations(make(map[string]string))
@@ -299,8 +302,19 @@ func (r *MongoShakeReconciler) createOrUpdateJob(job *batchv1.Job) error {
 		return errors.Wrapf(err, "get object")
 	}
 	if k8serrors.IsNotFound(err) {
-		log.Info("create mongoshake job", "job", job.Name)
-		return r.Create(context.TODO(), job)
+		if cr.Spec.Pause == false {
+			log.Info("create mongoshake job", "job", job.Name)
+			return r.Create(context.TODO(), job)
+		}
+		if cr.Spec.Pause {
+			log.Info("stopped mongoshake job", "job", job.Name)
+			return nil
+		}
+	}
+	// 如果Pause为true，则任务已经停止，需要停止dts-job
+	if cr.Spec.Pause {
+		log.Info("stopping mongoshake job", "job", job.Name)
+		return r.Delete(context.TODO(), job)
 	}
 
 	oldObjectMeta := oldJob.GetObjectMeta()
