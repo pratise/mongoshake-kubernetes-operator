@@ -87,14 +87,14 @@ type MongoShakeStatus struct {
 type CollectorSpec struct {
 	// current configuration version, do not modify.
 	// 当前配置文件的版本号，请不要修改该值。
-	ConfVersion int32  `json:"conf_version,omitempty"`
+	ConfVersion int32 `json:"conf_version,omitempty"`
 
 	// collector name
 	// id用于输出pid文件等信息。
-	Id          string `json:"id,omitempty"`
+	Id string `json:"id,omitempty"`
 
 	// 多个MongoShake同时拉取一个源端数据时，true为开启高可用设置。默认为false
-	MasterQuorum      bool              `json:"master_quorum,omitempty"`
+	MasterQuorum bool `json:"master_quorum,omitempty"`
 
 	// http api interface. Users can use this api to monitor mongoshake.
 	// `curl 127.0.0.1:9100`.
@@ -102,20 +102,20 @@ type CollectorSpec struct {
 	// print ack, lsn, checkpoint and qps information based on this api.
 	// usage: `./mongoshake-stat --port=9100`
 	// 全量和增量的restful监控端口，可以用curl查看内部监控metric统计情况。详见wiki。
-	FullSyncHttpPort  int32             `json:"full_sync_http_port,omitempty"`
-	IncrSyncHttpPort  int32             `json:"incr_sync_http_port,omitempty"`
+	FullSyncHttpPort int32 `json:"full_sync_http_port,omitempty"`
+	IncrSyncHttpPort int32 `json:"incr_sync_http_port,omitempty"`
 
 	// profiling on net/http/profile
 	// profiling端口，用于查看内部go堆栈。
-	SystemProfilePort int32             `json:"system_profile_port,omitempty"`
+	SystemProfilePort int32 `json:"system_profile_port,omitempty"`
 
-	Log               *LogSpec          `json:"log,omitempty"`
-	Mode              SyncMode          `json:"mode,omitempty"`
-	Mongo             *MongoSpec        `json:"mongo,omitempty"`
-	Tunnel            *TunnelSpec       `json:"tunnel,omitempty"`
-	MongoConnect      *MongoConnectMode `json:"mongo_connect,omitempty"`
-	Filter            *FilterSpec       `json:"filter,omitempty"`
-	CheckPoint        *CheckPointSpec   `json:"check_point,omitempty"`
+	Log          *LogSpec         `json:"log,omitempty"`
+	Mode         SyncMode         `json:"mode,omitempty"`
+	Mongo        *MongoSpec       `json:"mongo,omitempty"`
+	Tunnel       *TunnelSpec      `json:"tunnel,omitempty"`
+	MongoConnect MongoConnectMode `json:"mongo_connect,omitempty"`
+	Filter       *FilterSpec      `json:"filter,omitempty"`
+	CheckPoint   *CheckPointSpec  `json:"check_point,omitempty"`
 
 	// transform from source db or collection namespace to dest db or collection namespace.
 	// at most one of these two parameters can be given.
@@ -123,7 +123,7 @@ type CollectorSpec struct {
 	// 转换命名空间，比如a.b同步后变成c.d，谨慎建议开启，比较耗性能。
 	TransformNamespace string        `json:"transform_namespace"`
 	FullSync           *FullSyncSpec `json:"full_sync,omitempty"`
-	IncrSync           *IncrSync     `json:"incr_sync,omitempty"`
+	IncrSync           *IncrSyncSpec `json:"incr_sync,omitempty"`
 
 	// 特殊字段，标识源端类型，默认为空。阿里云MongoDB serverless集群请配置aliyun_serverless
 	SpecialSourceDbFlag string `json:"special_source_db_flag,omitempty"`
@@ -148,8 +148,8 @@ const (
 	ShardKeyCollection ShardKeyType = "collection"
 )
 
-// IncrSync defines the incr sync configuration
-type IncrSync struct {
+// IncrSyncSpec defines the incr sync configuration
+type IncrSyncSpec struct {
 	MongoFetchMethod FetchMethod `json:"mongo_fetch_method,omitempty"`
 	// After the document is updated, the fields that only need to be updated are set to false,
 	// and the contents of all documents are set to true
@@ -331,11 +331,19 @@ const (
 	MongoConnectModeStandalone         MongoConnectMode = "standalone"
 )
 
+type TunnelMessageFormat string
+
+const (
+	TunnelMessageFormatRaw TunnelMessageFormat = "raw"
+	TunnelMessageFormatJson TunnelMessageFormat = "json"
+	TunnelMessageFormatBson TunnelMessageFormat = "bson"
+)
+
 // TunnelSpec 通道信息配置
 type TunnelSpec struct {
 	Type                 TunnelType `json:"type,omitempty"`
 	Address              string     `json:"address,omitempty"`
-	Message              string     `json:"message,omitempty"`
+	Message              TunnelMessageFormat     `json:"message,omitempty"`
 	KafkaPartitionNumber int32      `json:"kafka_partition_number,omitempty"`
 	JsonFormat           string     `json:"json_format,omitempty"`
 	MongoSslRootCaFile   string     `json:"mongo_ssl_root_ca_file,omitempty"`
