@@ -175,7 +175,7 @@ func completedConfig(collector *CollectorSpec) string {
 	config.WriteString(fmt.Sprintf("tunnel.kafka.partition_number = %d\n", collector.Tunnel.KafkaPartitionNumber))
 	config.WriteString(fmt.Sprintf("tunnel.json.format = %s\n", collector.Tunnel.JsonFormat))
 	config.WriteString(fmt.Sprintf("tunnel.mongo_ssl_root_ca_file = %s\n", collector.Tunnel.MongoSslRootCaFile))
-	config.WriteString(fmt.Sprintf("mongo_connect_mode = %d\n", collector.ConfVersion))
+	config.WriteString(fmt.Sprintf("mongo_connect_mode = %s\n", collector.MongoConnect))
 	config.WriteString(fmt.Sprintf("filter.namespace.black = %s\n", collector.Filter.NamespaceBlack))
 	config.WriteString(fmt.Sprintf("filter.namespace.white = %s\n", collector.Filter.NamespaceWhite))
 	config.WriteString(fmt.Sprintf("filter.pass.special.db = %s\n", collector.Filter.PassSpecialDb))

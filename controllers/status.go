@@ -113,6 +113,11 @@ func (r *MongoShakeReconciler) jobStatus(cr *api.MongoShake) (api.JobStatus, err
 			}
 		}
 		switch {
+		case cr.Spec.Pause && (cr.Spec.Collector.Mode == api.SyncModeAll || cr.Spec.Collector.Mode == api.SyncModelIncr):
+			if err := r.Delete(context.TODO(), &pod); err != nil {
+				log.Error(err, "dts-job is paused, sync mode is incr or all, delete job pod fail", "pod", pod.Name)
+			}
+			status.Status = api.AppStatePaused
 		case cr.Spec.Pause && status.Ready > 0:
 			status.Status = api.AppStateStopping
 		case cr.Spec.Pause:

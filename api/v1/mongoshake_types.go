@@ -51,18 +51,19 @@ type MongoShakeList struct {
 type MongoShakeSpec struct {
 	// INSERT ADDITIONAL SPEC FIELDS - desired state of cluster
 	// Important: Run "make" to regenerate code after modifying this file
-	Image           string                 `json:"image,omitempty"`
-	BackoffLimit    *int32                 `json:"backoffLimit,omitempty"`
-	Pause           bool                   `json:"pause,omitempty"`
-	ImagePullPolicy corev1.PullPolicy      `json:"imagePullPolicy,omitempty"`
-	Resources       *ResourcesSpec         `json:"resources,omitempty"`
-	ReadinessProbe  *corev1.Probe          `json:"readinessProbe,omitempty"`
-	LivenessProbe   *LivenessProbeExtended `json:"livenessProbe,omitempty"`
-	Configuration   string                 `json:"configuration,omitempty"`
-	Annotations     map[string]string      `json:"annotations,omitempty"`
-	NodeSelector    map[string]string      `json:"nodeSelector,omitempty"`
-	VolumeSpec      *VolumeSpec            `json:"volumeSpec,omitempty"`
-	Collector       *CollectorSpec         `json:"collector,omitempty"`
+	Image              string                 `json:"image,omitempty"`
+	BackoffLimit       *int32                 `json:"backoffLimit,omitempty"`
+	Pause              bool                   `json:"pause,omitempty"`
+	ImagePullPolicy    corev1.PullPolicy      `json:"imagePullPolicy,omitempty"`
+	Resources          *ResourcesSpec         `json:"resources,omitempty"`
+	ReadinessProbe     *corev1.Probe          `json:"readinessProbe,omitempty"`
+	LivenessProbe      *LivenessProbeExtended `json:"livenessProbe,omitempty"`
+	Configuration      string                 `json:"configuration,omitempty"`
+	Annotations        map[string]string      `json:"annotations,omitempty"`
+	NodeSelector       map[string]string      `json:"nodeSelector,omitempty"`
+	VolumeSpec         *VolumeSpec            `json:"volumeSpec,omitempty"`
+	Collector          *CollectorSpec         `json:"collector,omitempty"`
+	HealthyCheckEnable bool                   `json:"healthy_check_enable,omitempty"`
 }
 
 type JobStatus struct {
@@ -76,11 +77,12 @@ type JobStatus struct {
 type MongoShakeStatus struct {
 	// INSERT ADDITIONAL STATUS FIELD - define observed state of cluster
 	// Important: Run "make" to regenerate code after modifying this file
-	State      AppState           `json:"state,omitempty"`
-	JobStatus  *JobStatus         `json:"job_status,omitempty"`
-	Message    string             `json:"message,omitempty"`
-	Conditions []ClusterCondition `json:"conditions,omitempty"`
-	Host       string             `json:"host,omitempty"`
+	State       AppState           `json:"state,omitempty"`
+	JobStatus   *JobStatus         `json:"job_status,omitempty"`
+	Message     string             `json:"message,omitempty"`
+	Conditions  []ClusterCondition `json:"conditions,omitempty"`
+	Host        string             `json:"host,omitempty"`
+	HealthCheck HealthyCheckType   `json:"health_check,omitempty"`
 }
 
 // CollectorSpec defines the global configuration of MongoShake
@@ -334,19 +336,19 @@ const (
 type TunnelMessageFormat string
 
 const (
-	TunnelMessageFormatRaw TunnelMessageFormat = "raw"
+	TunnelMessageFormatRaw  TunnelMessageFormat = "raw"
 	TunnelMessageFormatJson TunnelMessageFormat = "json"
 	TunnelMessageFormatBson TunnelMessageFormat = "bson"
 )
 
 // TunnelSpec 通道信息配置
 type TunnelSpec struct {
-	Type                 TunnelType `json:"type,omitempty"`
-	Address              string     `json:"address,omitempty"`
-	Message              TunnelMessageFormat     `json:"message,omitempty"`
-	KafkaPartitionNumber int32      `json:"kafka_partition_number,omitempty"`
-	JsonFormat           string     `json:"json_format,omitempty"`
-	MongoSslRootCaFile   string     `json:"mongo_ssl_root_ca_file,omitempty"`
+	Type                 TunnelType          `json:"type,omitempty"`
+	Address              string              `json:"address,omitempty"`
+	Message              TunnelMessageFormat `json:"message,omitempty"`
+	KafkaPartitionNumber int32               `json:"kafka_partition_number,omitempty"`
+	JsonFormat           string              `json:"json_format,omitempty"`
+	MongoSslRootCaFile   string              `json:"mongo_ssl_root_ca_file,omitempty"`
 }
 
 type FilterSpec struct {
@@ -493,6 +495,13 @@ type ClusterCondition struct {
 	Reason             string          `json:"reason,omitempty"`
 	Message            string          `json:"message,omitempty"`
 }
+
+type HealthyCheckType string
+
+const (
+	HealthyCheckTypeOk   HealthyCheckType = "success"
+	HealthyCheckTypeFail HealthyCheckType = "failed"
+)
 
 const maxStatusesQuantity = 20
 

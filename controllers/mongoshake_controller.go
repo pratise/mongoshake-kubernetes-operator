@@ -80,9 +80,10 @@ const (
 	updateWait = 1
 )
 
-// +kubebuilder:rbac:groups=pratise.github.com,resources=mongoshakes,verbs=get;list;watch;create;update;patch;delete
-// +kubebuilder:rbac:groups=pratise.github.com,resources=mongoshakes/status,verbs=get;update;patch
-// +kubebuilder:rbac:groups=pratise.github.com,resources=mongoshakes/finalizers,verbs=update
+// +kubebuilder:rbac:groups=pratise.github.com,resources=mongoshakes;mongoshakes/status;mongoshakes/finalizers,verbs=create;delete;get;list;patch;update;watch
+// +kubebuilder:rbac:groups="",resources=pods;pods/exec;services;persistentvolumeclaims;secrets;configmaps,verbs=get;list;watch;create;update;patch;delete
+// +kubebuilder:rbac:groups=apps,resources=deployments;replicasets;statefulsets,verbs=get;list;watch;create;update;patch;delete
+// +kubebuilder:rbac:groups=batch,resources=cronjobs;jobs,verbs=get;list;watch;create;update;patch;delete
 
 // Reconcile is part of the main kubernetes reconciliation loop which aims to
 // move the current state of the cluster closer to the desired state.
@@ -130,6 +131,12 @@ func (r *MongoShakeReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 	err = cr.CheckNSetDefaults(log)
 	if err != nil {
 		err = errors.Wrap(err, "wrong mongoshake options")
+		return reconcile.Result{}, err
+	}
+	// mongodb connection healthy check
+	err = r.CheckMongodbConnection(cr)
+	if err != nil {
+		err = errors.Wrap(err, "healthy check mongodb connection")
 		return reconcile.Result{}, err
 	}
 
@@ -237,45 +244,6 @@ func (r *MongoShakeReconciler) reconcileJob(cr *api.MongoShake, logger logr.Logg
 	return nil
 }
 
-func (r *MongoShakeReconciler) createOrUpdate(depl *appsv1.Deployment) error {
-	objectMeta := depl.GetObjectMeta()
-	if objectMeta.GetAnnotations() == nil {
-		objectMeta.SetAnnotations(make(map[string]string))
-	}
-	objAnnotations := objectMeta.GetAnnotations()
-	delete(objAnnotations, "mongoshake/last-config-hash")
-	objectMeta.SetAnnotations(objAnnotations)
-
-	hash, err := getObjectHash(depl)
-	if err != nil {
-		return errors.Wrap(err, "calculate object hash")
-	}
-	objAnnotations = objectMeta.GetAnnotations()
-	objAnnotations["mongoshake/last-config-hash"] = hash
-	objectMeta.SetAnnotations(objAnnotations)
-
-	oldDeployment := &appsv1.Deployment{}
-	err = r.Get(context.Background(), types.NamespacedName{
-		Namespace: depl.Namespace,
-		Name:      depl.Name,
-	}, oldDeployment)
-	if err != nil && !k8serrors.IsNotFound(err) {
-		return errors.Wrapf(err, "get object")
-	}
-	if k8serrors.IsNotFound(err) {
-		log.Info("create mongoshake deployment", "deployment", depl.Name)
-		return r.Create(context.TODO(), depl)
-	}
-
-	oldObjectMeta := oldDeployment.GetObjectMeta()
-	if oldObjectMeta.GetAnnotations()["mongoshake/last-config-hash"] != hash || !isObjectMetaEqual(depl, oldObjectMeta) {
-		depl.SetResourceVersion(oldObjectMeta.GetResourceVersion())
-		log.Info("update mongoshake deployment", "deployment", depl.Name)
-		return r.Update(context.TODO(), depl)
-	}
-	return nil
-}
-
 func (r *MongoShakeReconciler) createOrUpdateJob(cr *api.MongoShake, job *batchv1.Job) error {
 	objectMeta := job.GetObjectMeta()
 	if objectMeta.GetAnnotations() == nil {
@@ -314,6 +282,7 @@ func (r *MongoShakeReconciler) createOrUpdateJob(cr *api.MongoShake, job *batchv
 	// 如果Pause为true，则任务已经停止，需要停止dts-job
 	if cr.Spec.Pause {
 		log.Info("stopping mongoshake job", "job", job.Name)
+		cr.Status.HealthCheck = ""
 		return r.Delete(context.TODO(), job)
 	}
 
@@ -371,6 +340,45 @@ func (r *MongoShakeReconciler) createOrUpdatePersistentVolumeClaim(cr *api.Mongo
 		return r.Update(context.TODO(), pvc)
 	}
 
+	return nil
+}
+
+func (r *MongoShakeReconciler) CheckMongodbConnection(cr *api.MongoShake) error {
+	if !cr.Spec.HealthyCheckEnable {
+		return nil
+	}
+
+	if cr.Spec.Pause || cr.Status.HealthCheck == api.HealthyCheckTypeOk {
+		return nil
+	}
+
+	if cr.Spec.Collector == nil || cr.Spec.Collector.Mongo == nil {
+		return errors.New("If health check is true, parameter spec.collector.mongo is required")
+	}
+	var (
+		mongoUrls  = cr.Spec.Collector.Mongo.MongoUrls
+		mongoCsUrl = cr.Spec.Collector.Mongo.MongoCsUrl
+		mongoSUrl  = cr.Spec.Collector.Mongo.MongoSUrl
+	)
+
+	err := ms.PingMongoClient(mongoUrls)
+	if err != nil {
+		cr.Status.HealthCheck = api.HealthyCheckTypeFail
+		return errors.Wrapf(err, "failed to ping mongoUrls:%s", mongoUrls)
+	}
+	if cr.Spec.Collector.Mode != api.SyncModeFull {
+		err = ms.PingMongoClient(mongoSUrl)
+		if err != nil {
+			cr.Status.HealthCheck = api.HealthyCheckTypeFail
+			return errors.Wrapf(err, "failed to ping mongoSUrl:%s", mongoSUrl)
+		}
+		err = ms.PingMongoClient(mongoCsUrl)
+		if err != nil {
+			cr.Status.HealthCheck = api.HealthyCheckTypeFail
+			return errors.Wrapf(err, "failed to ping mongoCsUrl:%s", mongoCsUrl)
+		}
+	}
+	cr.Status.HealthCheck = api.HealthyCheckTypeOk
 	return nil
 }
 

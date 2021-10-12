@@ -7,10 +7,14 @@ metadata:
   name: mongoshake-role
 rules:
 - apiGroups:
-  - pratise.github.com
+  - ""
   resources:
-  - mongoshakes
-  - mongoshakes/status
+  - configmaps
+  - persistentvolumeclaims
+  - pods
+  - pods/exec
+  - secrets
+  - services
   verbs:
   - create
   - delete
@@ -20,46 +24,43 @@ rules:
   - update
   - watch
 - apiGroups:
-    - ""
-  resources:
-    - pods
-    - pods/exec
-    - services
-    - persistentvolumeclaims
-    - secrets
-    - configmaps
-  verbs:
-    - get
-    - list
-    - watch
-    - create
-    - update
-    - patch
-    - delete
-- apiGroups:
   - apps
   resources:
-    - deployments
-    - replicasets
-    - statefulsets
+  - deployments
+  - replicasets
+  - statefulsets
   verbs:
-    - get
-    - list
-    - watch
-    - create
-    - update
-    - patch
-    - delete
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
 - apiGroups:
-    - batch
+  - batch
   resources:
-    - cronjobs
-    - jobs
+  - cronjobs
+  - jobs
   verbs:
-    - get
-    - list
-    - watch
-    - create
-    - update
-    - patch
-    - delete
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - pratise.github.com
+  resources:
+  - mongoshakes
+  - mongoshakes/finalizers
+  - mongoshakes/status
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
