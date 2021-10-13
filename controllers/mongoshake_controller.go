@@ -19,6 +19,7 @@ package controllers
 import (
 	"context"
 	"encoding/base64"
+	"fmt"
 	"github.com/go-logr/logr"
 	"github.com/pkg/errors"
 	api "github.com/pratise/mongoshake-kubernetes-operator/api/v1"
@@ -204,12 +205,20 @@ func (r *MongoShakeReconciler) createOrUpdateConfigMap(cr *api.MongoShake, confi
 
 	if k8serrors.IsNotFound(err) {
 		log.Info("create mongoshake configmap", "mongoshake", cr.Name, "configmap", configMap.Name)
-		return r.Create(context.TODO(), configMap)
+		err := r.Create(context.TODO(), configMap)
+		if err != nil {
+			log.Error(err, "failed to create mongoshake configmap", "job", configMap.Name)
+			return fmt.Errorf("failed to create mongoshake configmap, configMap:%s", configMap.Name)
+		}
 	}
 
 	if !mapsEqual(currMap.Data, configMap.Data) {
 		log.Info("update mongoshake configmap", "mongoshake", cr.Name, "configmap", configMap.Name)
-		return r.Update(context.TODO(), configMap)
+		err := r.Update(context.TODO(), configMap)
+		if err != nil {
+			log.Error(err, "failed to update mongoshake configmap", "configMap", configMap.Name)
+			return fmt.Errorf("failed to update mongoshake configmap, configMap:%s", configMap.Name)
+		}
 	}
 
 	return nil
@@ -272,7 +281,12 @@ func (r *MongoShakeReconciler) createOrUpdateJob(cr *api.MongoShake, job *batchv
 	if k8serrors.IsNotFound(err) {
 		if cr.Spec.Pause == false {
 			log.Info("create mongoshake job", "job", job.Name)
-			return r.Create(context.TODO(), job)
+			err := r.Create(context.TODO(), job)
+			if err != nil {
+				log.Error(err, "failed to create mongoshake job", "job", job.Name)
+				return fmt.Errorf("failed to create mongoshake job, jobName:%s", job.Name)
+			}
+
 		}
 		if cr.Spec.Pause {
 			log.Info("stopped mongoshake job", "job", job.Name)
@@ -283,14 +297,24 @@ func (r *MongoShakeReconciler) createOrUpdateJob(cr *api.MongoShake, job *batchv
 	if cr.Spec.Pause {
 		log.Info("stopping mongoshake job", "job", job.Name)
 		cr.Status.HealthCheck = ""
-		return r.Delete(context.TODO(), job)
+		err := r.Delete(context.TODO(), job)
+		if err != nil {
+			log.Error(err, "failed to stopping mongoshake job", "job", job.Name)
+			return fmt.Errorf("failed to stopping mongoshake job, jobName:%s", job.Name)
+		}
+		return err
 	}
 
 	oldObjectMeta := oldJob.GetObjectMeta()
 	if oldObjectMeta.GetAnnotations()["mongoshake/last-config-hash"] != hash || !isObjectMetaEqual(job, oldObjectMeta) {
 		job.SetResourceVersion(oldObjectMeta.GetResourceVersion())
 		log.Info("update mongoshake job", "job", job.Name)
-		return r.Update(context.TODO(), job)
+		err := r.Update(context.TODO(), job)
+		if err != nil {
+			log.Error(err, "failed to update mongoshake job", "job", job.Name)
+			return fmt.Errorf("failed to update mongoshake job, jobName:%s", job.Name)
+		}
+		return err
 	}
 	return nil
 }
@@ -332,12 +356,20 @@ func (r *MongoShakeReconciler) createOrUpdatePersistentVolumeClaim(cr *api.Mongo
 
 	if k8serrors.IsNotFound(err) {
 		log.Info("create mongoshake pvc", "mongoshake", cr.Name, "pvc", pvc.Name)
-		return r.Create(context.TODO(), pvc)
+		err := r.Create(context.TODO(), pvc)
+		if err != nil {
+			log.Error(err, "failed to create mongoshake pvc", "pvc", pvc.Name)
+			return fmt.Errorf("failed to create mongoshake pvc, jobName:%s", pvc.Name)
+		}
 	}
 
 	if *currPvc.Spec.Resources.Requests.Storage() != *pvc.Spec.Resources.Requests.Storage() {
 		log.Info("update mongoshake pvc", "mongoshake", cr.Name, "pvc", pvc.Name)
-		return r.Update(context.TODO(), pvc)
+		err := r.Update(context.TODO(), pvc)
+		if err != nil {
+			log.Error(err, "failed to update mongoshake pvc", "pvc", pvc.Name)
+			return fmt.Errorf("failed to update mongoshake pvc, pvcName:%s", pvc.Name)
+		}
 	}
 
 	return nil
