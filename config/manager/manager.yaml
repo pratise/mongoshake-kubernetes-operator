@@ -20,8 +20,8 @@ spec:
       containers:
         - command:
             - /manager
-          args:
-            - --leader-elect
+#          args:
+#            - --leader-elect
           image: hub.51idc.com/pratise/mongoshake-operator:v1
           imagePullPolicy: Always
           name: manager
@@ -41,10 +41,10 @@ spec:
             periodSeconds: 10
           resources:
             limits:
-              cpu: 100m
-              memory: 30Mi
+              cpu: 300m
+              memory: 500Mi
             requests:
-              cpu: 100m
-              memory: 20Mi
+              cpu: 300m
+              memory: 500Mi
       serviceAccountName: mongoshake-operator
       terminationGracePeriodSeconds: 10
