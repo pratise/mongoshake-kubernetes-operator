@@ -64,7 +64,7 @@ func (r *MongoShakeReconciler) updateStatus(cr *api.MongoShake, reconcileErr err
 		cr.Status.AddCondition(mongoshakeCondition)
 	}
 	cr.Status.JobStatus = &jobStatus
-
+	cr.Status.Message = ""
 	switch jobStatus.Status {
 	case api.AppStateRunning:
 		cr.Status.State = api.AppStateRunning
