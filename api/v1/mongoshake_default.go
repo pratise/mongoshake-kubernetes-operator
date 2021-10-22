@@ -15,7 +15,7 @@ var (
 	defaultSystemProfilePort       int32 = 9200
 	defaultLogFileName                   = "collector.log"
 	defaultStorageDbName                 = "mongoshake"
-	defaultStorageCollectionName         = "ckpt_default"
+	defaultStorageCollectionName         = "ckpt_%s"
 	defaultCheckPointStartPosition       = "1970-01-01T00:00:00Z"
 	defaultImagePullPolicy               = corev1.PullAlways
 )
@@ -88,7 +88,7 @@ func (cr *MongoShake) CheckNSetDefaults(logger logr.Logger) error {
 		cr.Spec.Collector.CheckPoint.StorageDb = defaultStorageDbName
 	}
 	if cr.Spec.Collector.CheckPoint.StorageCollection == "" {
-		cr.Spec.Collector.CheckPoint.StorageCollection = defaultStorageCollectionName
+		cr.Spec.Collector.CheckPoint.StorageCollection = fmt.Sprintf(defaultStorageCollectionName, cr.Name)
 	}
 	if cr.Spec.Collector.CheckPoint.StartPosition == "" {
 		cr.Spec.Collector.CheckPoint.StartPosition = defaultCheckPointStartPosition
