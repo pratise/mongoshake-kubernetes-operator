@@ -293,6 +293,13 @@ func (in *MongoShakeSpec) DeepCopyInto(out *MongoShakeSpec) {
 			(*out)[key] = val
 		}
 	}
+	if in.Tolerations != nil {
+		in, out := &in.Tolerations, &out.Tolerations
+		*out = make([]corev1.Toleration, len(*in))
+		for i := range *in {
+			(*in)[i].DeepCopyInto(&(*out)[i])
+		}
+	}
 	if in.VolumeSpec != nil {
 		in, out := &in.VolumeSpec, &out.VolumeSpec
 		*out = new(VolumeSpec)

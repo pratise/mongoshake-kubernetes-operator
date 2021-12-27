@@ -96,7 +96,7 @@ spec:
     #        path: /data
     #        type: Directory
     persistentVolumeClaim:
-      storageClassName: my-storage
+      storageClassName: smartops-nfs-storage
       accessModes: [ "ReadWriteOnce" ]
       resources:
         requests:

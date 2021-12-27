@@ -37,13 +37,14 @@ import (
 )
 
 var (
+	// 用来解析kubernetes对象
 	scheme   = runtime.NewScheme()
 	setupLog = ctrl.Log.WithName("setup")
 )
 
 func init() {
 	utilruntime.Must(clientgoscheme.AddToScheme(scheme))
-
+	// 添加自定义对象到scheme
 	utilruntime.Must(pratisev1.AddToScheme(scheme))
 	// +kubebuilder:scaffold:scheme
 }
@@ -64,7 +65,7 @@ func main() {
 	flag.Parse()
 
 	ctrl.SetLogger(zap.New(zap.UseFlagOptions(&opts)))
-
+	// 初始化controller manager
 	mgr, err := ctrl.NewManager(ctrl.GetConfigOrDie(), ctrl.Options{
 		Scheme:                 scheme,
 		MetricsBindAddress:     metricsAddr,
@@ -77,7 +78,7 @@ func main() {
 		setupLog.Error(err, "unable to start manager")
 		os.Exit(1)
 	}
-
+	// 初始化Reconciler,即mongoshake_controller
 	if err = (&controllers.MongoShakeReconciler{
 		Client:  mgr.GetClient(),
 		Scheme:  mgr.GetScheme(),
@@ -98,6 +99,7 @@ func main() {
 	}
 
 	setupLog.Info("starting manager")
+	// 启动manager
 	if err := mgr.Start(ctrl.SetupSignalHandler()); err != nil {
 		setupLog.Error(err, "problem running manager")
 		os.Exit(1)

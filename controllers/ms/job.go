@@ -69,6 +69,7 @@ func MongoshakeJobSpec(cr *api.MongoShake, log logr.Logger) (batchv1.JobSpec, er
 			},
 			Spec: corev1.PodSpec{
 				NodeSelector:  cr.Spec.NodeSelector,
+				Tolerations:   cr.Spec.Tolerations,
 				RestartPolicy: corev1.RestartPolicyNever,
 				Containers:    []corev1.Container{container},
 				Volumes:       volumes(cr),

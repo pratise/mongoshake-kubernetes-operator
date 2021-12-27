@@ -61,6 +61,7 @@ type MongoShakeSpec struct {
 	Configuration      string                 `json:"configuration,omitempty"`
 	Annotations        map[string]string      `json:"annotations,omitempty"`
 	NodeSelector       map[string]string      `json:"nodeSelector,omitempty"`
+	Tolerations        []corev1.Toleration    `json:"tolerations,omitempty"`
 	VolumeSpec         *VolumeSpec            `json:"volumeSpec,omitempty"`
 	Collector          *CollectorSpec         `json:"collector,omitempty"`
 	HealthyCheckEnable bool                   `json:"healthy_check_enable,omitempty"`
